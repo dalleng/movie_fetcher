@@ -6,7 +6,7 @@ CARTELERA, NUEVOS = range(2)
 
 
 def list_movies(text, movies_type=CARTELERA):
-    """ Returns a dict with movie titles as keys and movie urls
+    """ Returns a dict with movie titles as keys and movie paths
         as values. """
 
     if movies_type == CARTELERA:
@@ -34,8 +34,10 @@ def fetch_movie_data(movie_path):
     r = requests.get(CINES_BASE_URL + movie_path)
     soup = BeautifulSoup(r.text)
 
-    original_title = soup.select('.texto_principal h2')
-    original_title = original_title[1:-1]
+    original_title = soup.select('.texto_principal h2').pop()
+    original_title = original_title.text[1:-1]
+    
+    poster_path = soup.select('.imagen_principal').pop()['src']
 
 
 if __name__ == '__main__':
