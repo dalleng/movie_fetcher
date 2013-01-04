@@ -30,8 +30,12 @@ def list_movies(text, movies_type=CARTELERA):
     return movies
 
 
-def fetch_movie_data():
-    pass
+def fetch_movie_data(movie_path):
+    r = requests.get(CINES_BASE_URL + movie_path)
+    soup = BeautifulSoup(r.text)
+
+    original_title = soup.select('.texto_principal h2')
+    original_title = original_title[1:-1]
 
 
 if __name__ == '__main__':
