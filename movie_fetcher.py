@@ -5,13 +5,13 @@ CINES_BASE_URL = 'http://www.cines.com.py'
 CARTELERA, NUEVOS = range(2)
 
 
-def list_movies(text, movies_type=CARTELERA):
+def get_movie_paths(text, movie_type=CARTELERA):
     """ Returns a dict with movie titles as keys and movie paths
         as values. """
 
-    if movies_type == CARTELERA:
+    if movie_type == CARTELERA:
         id = 'cuadro_lista_nuevos'
-    elif movies_type == NUEVOS:
+    elif movie_type == NUEVOS:
         id = 'cuadro_lista_cartelera'
     else:
         raise TypeError(
@@ -23,24 +23,38 @@ def list_movies(text, movies_type=CARTELERA):
     # some links are not needed
     movies = movies.find_all('a')[:-3]
 
-    movie_titles = [a.text for a in movies]
-    movie_paths = [a['href'] for a in movies]
-
-    movies = dict(zip(movie_titles, movie_paths))
-    return movies
+    return [a['href'] for a in movies]
 
 
 def fetch_movie_data(movie_path):
+    """ Fetches movie info from the movie site. Returns a dict
+        containing the info obtained. """
+
+    """
+    TO-DO
+    fetch:
+        - poster_full
+        - genres
+        - title
+        - cast
+
+    """
+
     r = requests.get(CINES_BASE_URL + movie_path)
     soup = BeautifulSoup(r.text)
 
     original_title = soup.select('.texto_principal h2').pop()
+    
+    # removes surrounding parentheses
     original_title = original_title.text[1:-1]
     
-    poster_path = soup.select('.imagen_principal').pop()['src']
+    poster_path_thumb = soup.select('.imagen_principal').pop()['src']
+    
+    synopsis = soup.select('.cartelera_cuadro p').pop()
+    synopsis = synopsis.text.strip()
 
 
 if __name__ == '__main__':
     r = requests.get(CINES_BASE_URL)
-    cartelera_movies = list_movies(r.text, movies_type=CARTELERA)
-    nuevos_movies = list_movies(r.text, movies_type=NUEVOS)
+    import pprint; pprint.pprint(get_movie_paths(r.text, CARTELERA))
+    #nuevos_movies = list_movies(r.text, movies_type=NUEVOS)
