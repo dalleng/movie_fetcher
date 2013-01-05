@@ -32,7 +32,7 @@ def fetch_movie_data(movie_path):
     r = requests.get(CINES_BASE_URL + movie_path)
     soup = BeautifulSoup(r.text)
 
-    title = soup.select('.texto_principal h1')
+    title = soup.select('.texto_principal h1').pop().text
     original_title = soup.select('.texto_principal h2').pop()
 
     # removes surrounding parentheses
@@ -71,21 +71,20 @@ def fetch_movie_data(movie_path):
 
     if 'DURACION' in movie_info_titles:
         i = movie_info_titles.index('DURACION')
-        runtime = movie_info_values[i].split(, )
-    else:
-        runtime = []
+        runtime = movie_info_values[i]
 
     keys = ['title', 'original_title', 'path_thumb', 'poster_full',
             'synopsis', 'cast', 'genre', 'runtime']
 
-    values = [title, original_title, path_thumb, poster_full, synopsis,
+    values = [title, original_title, poster_thumb, poster_full, synopsis,
               cast, genre, runtime]
 
     return dict(zip(keys, values))
 
 
 if __name__ == '__main__':
+    from pprint import pprint
+
     r = requests.get(CINES_BASE_URL)
-    import pprint
-    pprint.pprint(get_movie_paths(r.text, CARTELERA))
-    # nuevos_movies = list_movies(r.text, movies_type=NUEVOS)
+    cartelera_paths = get_movie_paths(r.text, CARTELERA)
+    pprint(fetch_movie_data(cartelera_paths[0]))
