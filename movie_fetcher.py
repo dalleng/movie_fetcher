@@ -1,18 +1,22 @@
 from bs4 import BeautifulSoup
+from os.path import expanduser
 import requests
+import json
 
 CINES_BASE_URL = 'http://www.cines.com.py'
 CARTELERA, NUEVOS = range(2)
 
+DROPBOX_PATH = expanduser('~') + '/Dropbox/public/'
 
-def get_movie_paths(text, movie_type=CARTELERA):
+
+def get_movie_paths(text, movie_type):
     """ Returns a dict with movie titles as keys and movie paths
         as values. """
 
     if movie_type == CARTELERA:
-        id = 'cuadro_lista_nuevos'
-    elif movie_type == NUEVOS:
         id = 'cuadro_lista_cartelera'
+    elif movie_type == NUEVOS:
+        id = 'cuadro_lista_nuevos'
     else:
         raise TypeError(
             "expecting type of movie, got %s" % type(movie_type).__name__)
@@ -26,8 +30,9 @@ def get_movie_paths(text, movie_type=CARTELERA):
     return [a['href'] for a in movies]
 
 
-def fetch_movie_data(movie_path):
-    """ Fetches info from movie site and returns a dict containing the info """
+def fetch_movie_info(movie_path):
+    """ Fetches information from movie site and returns a dict 
+        containing with it """
 
     r = requests.get(CINES_BASE_URL + movie_path)
     soup = BeautifulSoup(r.text)
@@ -37,6 +42,10 @@ def fetch_movie_data(movie_path):
 
     # removes surrounding parentheses
     original_title = original_title.text[1:-1]
+    
+    theaters = [i.text for i in soup.select('#horarios h1')]
+    schedule = [[i.text.strip()] for i in soup.select('#horarios p')]
+    showtimes = dict(zip(theaters, schedule))
 
     poster_thumb = soup.select('.imagen_principal').pop()['src']
     poster_thumb = CINES_BASE_URL + poster_thumb
@@ -44,7 +53,7 @@ def fetch_movie_data(movie_path):
     poster_full = soup.find(id='gallery').a['href']
     poster_full = CINES_BASE_URL + poster_full
 
-    synopsis = soup.select('.cartelera_cuadro p').pop()
+    synopsis = soup.select('.cartelera_cuadro p')[0]
     synopsis = synopsis.text.strip()
 
     movie_info_titles = [i.text for i in soup.select(
@@ -74,17 +83,27 @@ def fetch_movie_data(movie_path):
         runtime = movie_info_values[i]
 
     keys = ['title', 'original_title', 'path_thumb', 'poster_full',
-            'synopsis', 'cast', 'genre', 'runtime']
+            'synopsis', 'cast', 'genre', 'runtime', 'showtimes']
 
     values = [title, original_title, poster_thumb, poster_full, synopsis,
-              cast, genre, runtime]
+              cast, genre, runtime, showtimes]
 
     return dict(zip(keys, values))
 
 
 if __name__ == '__main__':
-    from pprint import pprint
-
     r = requests.get(CINES_BASE_URL)
-    cartelera_paths = get_movie_paths(r.text, CARTELERA)
-    pprint(fetch_movie_data(cartelera_paths[0]))
+
+    for movie_type in (CARTELERA, NUEVOS):
+        movie_info = []
+        for movie_path in get_movie_paths(r.text, movie_type):
+            movie_info += [fetch_movie_info(movie_path)]
+
+        if movie_type == CARTELERA:
+            filename = 'cartelera.json'
+        else:
+            filename = 'proximamente.json'
+
+        import pprint; pprint.pprint(movie_info)
+        with open(DROPBOX_PATH + filename, 'w+') as fsock:
+            fsock.write(json.dumps(movie_info))
