@@ -10,7 +10,8 @@ DROPBOX_PATH = expanduser('~') + '/Dropbox/public/'
 
 
 def get_movie_paths(text, movie_type):
-    """ Returns a dict with movie titles as keys and movie paths
+    """ Gets the movie path for each movie of type movie_type, 
+        returns a dict with movie titles as keys and movie paths
         as values. """
 
     if movie_type == CARTELERA:
@@ -31,8 +32,8 @@ def get_movie_paths(text, movie_type):
 
 
 def fetch_movie_info(movie_path):
-    """ Fetches information from movie site and returns a dict 
-        containing with it """
+    """ Fetches each movie site to get info (showtimes, synopsis, etc), 
+        returns a dict containing it """
 
     r = requests.get(CINES_BASE_URL + movie_path)
     soup = BeautifulSoup(r.text)
