@@ -104,6 +104,5 @@ if __name__ == '__main__':
         else:
             filename = 'proximamente.json'
 
-        import pprint; pprint.pprint(movie_info)
         with open(DROPBOX_PATH + filename, 'w+') as fsock:
             fsock.write(json.dumps(movie_info))
