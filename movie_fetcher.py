@@ -83,7 +83,7 @@ def fetch_movie_info(movie_path):
         i = movie_info_titles.index('DURACION')
         runtime = movie_info_values[i]
 
-    keys = ['title', 'original_title', 'path_thumb', 'poster_full',
+    keys = ['title', 'original_title', 'poster_thumb', 'poster_full',
             'synopsis', 'cast', 'genre', 'runtime', 'showtimes']
 
     values = [title, original_title, poster_thumb, poster_full, synopsis,
