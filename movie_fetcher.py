@@ -82,6 +82,8 @@ def fetch_movie_info(movie_path):
     if 'DURACION' in movie_info_titles:
         i = movie_info_titles.index('DURACION')
         runtime = movie_info_values[i]
+    else:
+        runtime = ''
 
     keys = ['title', 'original_title', 'poster_thumb', 'poster_full',
             'synopsis', 'cast', 'genre', 'runtime', 'showtimes']
